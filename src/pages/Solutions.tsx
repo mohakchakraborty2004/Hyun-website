@@ -140,22 +140,35 @@ const Solutions = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="w-full h-[300px] sm:h-[350px] relative"
+                  style={{ perspective: '1200px' }}
                 >
-                  <div 
-                    className="w-full h-full rounded-lg relative transition-all duration-500 ease-in-out cursor-pointer group bg-gradient-to-br from-[#fbfbfb] to-[#f7efff] hover:from-[#f8f8f8] hover:to-[#f0e8ff] hover:shadow-[#d0a4ff]/20"
+                  <div
+                    className="w-full h-full rounded-2xl relative transition-all duration-500 ease-in-out cursor-pointer group"
                     style={{
-                      background: solution.cardBg,
-                      borderColor: solution.border,
                       transform: flippedCards.has(solution.id) ? 'rotateY(180deg)' : 'rotateY(0deg)',
-                      transformStyle: 'preserve-3d'
+                      transformStyle: 'preserve-3d',
                     }}
                     onClick={() => handleCardClick(solution.id)}
                   >
                     {/* Front of card */}
-                    <div className="absolute inset-0 w-full h-full" style={{ backfaceVisibility: 'hidden' }}>
+                    <div
+                      className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl overflow-hidden transition-shadow duration-300 group-hover:shadow-2xl group-hover:shadow-[#d0a4ff]/15"
+                      style={{
+                        backfaceVisibility: 'hidden',
+                        WebkitBackfaceVisibility: 'hidden',
+                        background: 'rgba(255, 255, 255, 0.4)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                      }}
+                    >
                       {solution.icon && (
-                        <div 
-                          className="absolute w-10 h-10 top-6 sm:top-[34px] left-6 sm:left-[34px] rounded-lg flex items-center justify-center transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3 bg-gray-100"
+                        <div
+                          className="absolute w-11 h-11 top-6 sm:top-[34px] left-6 sm:left-[34px] rounded-xl flex items-center justify-center transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3 border border-white/50 shadow-sm"
+                          style={{
+                            background: 'rgba(255, 255, 255, 0.6)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                          }}
                         >
                           <img
                             className="w-6 h-6 transition-all duration-300 ease-in-out group-hover:brightness-110"
@@ -166,30 +179,36 @@ const Solutions = () => {
                       )}
 
                       <div className="absolute top-[80px] sm:top-[108px] left-6 sm:left-[34px] right-6 sm:right-[34px]">
-                        <h3 className="font-medium text-black text-xl sm:text-2xl tracking-[-0.48px] leading-[24px] sm:leading-[26.4px] transition-all duration-300 ease-in-out group-hover:text-[#0c202b] group-hover:translate-y-[-2px]">
+                        <h3 className="font-semibold text-[#1a1a2e] text-xl sm:text-2xl tracking-[-0.48px] leading-[24px] sm:leading-[26.4px] transition-all duration-300 ease-in-out group-hover:translate-y-[-2px]">
                           {solution.title}
                         </h3>
                       </div>
 
                       <img
-                        className="absolute w-full h-[140px] sm:h-[180px] bottom-0 left-0 object-cover rounded-b-lg transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:brightness-110"
+                        className="absolute w-full h-[140px] sm:h-[180px] bottom-0 left-0 object-cover rounded-b-2xl transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:brightness-105"
                         alt="Solution"
                         src={solution.image}
                       />
+                      {/* Subtle gradient overlay on image for blend */}
+                      <div className="absolute bottom-0 left-0 w-full h-[60px] bg-gradient-to-t from-white/30 to-transparent rounded-b-2xl pointer-events-none" />
                     </div>
 
                     {/* Back of card */}
-                    <div 
-                      className="absolute inset-0 w-full h-full p-6 sm:p-8 flex flex-col justify-center items-center text-center"
-                      style={{ 
+                    <div
+                      className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl p-6 sm:p-8 flex flex-col justify-center items-center text-center"
+                      style={{
                         backfaceVisibility: 'hidden',
-                        transform: 'rotateY(180deg)'
+                        WebkitBackfaceVisibility: 'hidden',
+                        transform: 'rotateY(180deg)',
+                        background: 'rgba(255, 255, 255, 0.5)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
                       }}
                     >
-                      <h3 className="font-medium text-black text-xl sm:text-2xl tracking-[-0.48px] leading-[24px] sm:leading-[26.4px] mb-3 sm:mb-4">
+                      <h3 className="font-semibold text-[#1a1a2e] text-xl sm:text-2xl tracking-[-0.48px] leading-[24px] sm:leading-[26.4px] mb-3 sm:mb-4">
                         {solution.title}
                       </h3>
-                      <p className="font-normal text-black text-sm tracking-[0] leading-[22.4px]">
+                      <p className="text-[#3a3a4a] text-sm sm:text-[0.9rem] leading-relaxed">
                         {solution.description}
                       </p>
                     </div>

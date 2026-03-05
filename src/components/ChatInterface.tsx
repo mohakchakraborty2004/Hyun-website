@@ -408,6 +408,14 @@ function extractStructuredAboutFromText(text: string): AboutCompanyItem {
 
   if (Object.keys(highlights).length > 0) payload.highlights = highlights;
 
+  // ── Website URL ── (non-image http(s) URLs)
+  const urlPattern = /https?:\/\/(?!.*\.(?:png|jpg|jpeg|gif|webp|svg|ico|bmp)(?:\?|$))[^\s<>"')\],]+/gi;
+  const urls = text.match(urlPattern);
+  if (urls && urls.length > 0) {
+    // Pick the first non-image URL as the website
+    payload.website = urls[0].replace(/[.,;:!?)]+$/, '');
+  }
+
   // ── Description & Bio ──
   const cleanedText = cleanTextForCard(text);
   const paragraphs = cleanedText.split(/\n\n+/).map(p => p.trim()).filter(p => p.length > 20);
@@ -718,6 +726,17 @@ const TimeSlotCardView = ({ payload, onSend }: { payload: { slots: TimeSlot[]; d
   );
 };
 
+// Helper: render text with clickable URLs
+const linkifyText = (text: string) => {
+  const urlRe = /(https?:\/\/[^\s<>"')\],]+)/g;
+  const parts = text.split(urlRe);
+  return parts.map((part, i) =>
+    urlRe.test(part) ? (
+      <a key={i} href={part.replace(/[.,;:!?)]+$/, '')} target="_blank" rel="noopener noreferrer" className="text-[#af71f1] underline underline-offset-2 hover:text-[#9c5ee0] break-all">{part.replace(/[.,;:!?)]+$/, '')}</a>
+    ) : part
+  );
+};
+
 const AboutCompanyCard = ({ payload, onSend }: { payload: AboutCompanyItem; onSend: (msg: string) => void }) => {
   const [visible, setVisible] = useState(false);
   useEffect(() => { const t = setTimeout(() => setVisible(true), 100); return () => clearTimeout(t); }, []);
@@ -794,7 +813,7 @@ const AboutCompanyCard = ({ payload, onSend }: { payload: AboutCompanyItem; onSe
           {/* Description */}
           {descText && (
             <p className="text-[#3a3a4a] text-sm sm:text-[0.9rem] leading-relaxed">
-              {descText}
+              {linkifyText(descText)}
             </p>
           )}
 
@@ -803,7 +822,7 @@ const AboutCompanyCard = ({ payload, onSend }: { payload: AboutCompanyItem; onSe
             <div className="space-y-2.5">
               {payload.bio.map((paragraph, i) => (
                 <p key={i} className="text-[#3a3a4a] text-sm sm:text-[0.9rem] leading-relaxed">
-                  {paragraph}
+                  {linkifyText(paragraph)}
                 </p>
               ))}
             </div>
@@ -1514,78 +1533,77 @@ const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
                       </motion.div>
                     )}
 
+                    {/* Voice call transcripts rendered as chat bubbles */}
+                    {voiceTranscripts.map((t) => (
+                      <motion.div
+                        key={`voice-${t.id}`}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className={`flex ${t.speaker !== 'agent' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        {t.speaker !== 'agent' ? (
+                          <div className={`max-w-[85%] sm:max-w-[70%] bg-white text-black rounded-2xl rounded-br-md px-3 sm:px-4 py-2.5 sm:py-3 shadow-lg border border-gray-200 ${!t.isFinal ? 'opacity-60' : ''}`}>
+                            <p className="text-sm sm:text-base leading-relaxed whitespace-pre-line break-words">{t.text}</p>
+                          </div>
+                        ) : (
+                          <div className={`max-w-[85%] flex items-start gap-3 ${!t.isFinal ? 'opacity-60' : ''}`}>
+                            <div className="w-2 h-2 bg-[#d0a4ff] rounded-full mt-2 flex-shrink-0" />
+                            <div className="rounded-2xl rounded-bl-md px-3 py-2">
+                              <p className="text-black text-base leading-relaxed break-words">{t.text}</p>
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+
                     <div ref={chatEndRef} />
+                    <div ref={voiceTranscriptsEndRef} />
                   </div>
                 </div>
 
-                <AnimatePresence mode="wait">
-                  {voiceCallActive || voiceCallConnecting ? (
-                    /* ── Voice Call Overlay ── */
-                    <motion.div
-                      key="voice-call"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      transition={{ duration: 0.3 }}
-                      className="border-t border-white/30 px-3 sm:px-6 py-4 sm:py-5"
-                      style={{ background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
-                    >
-                      <div className="max-w-7xl w-full mx-auto">
-                        {/* Status bar */}
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2.5">
-                            <span className={`w-2.5 h-2.5 rounded-full ${voiceCallActive ? 'bg-green-500 animate-pulse' : 'bg-amber-400 animate-pulse'}`} />
-                            <span className="text-sm font-semibold text-[#1a1a2e]">
+                {/* ── Chat Input (always visible) ── */}
+                <div className="border-t border-gray-100 px-3 sm:px-6 py-3 sm:py-4 bg-white/95 backdrop-blur-sm">
+                  {/* Voice call status bar */}
+                  <AnimatePresence>
+                    {(voiceCallActive || voiceCallConnecting) && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="max-w-7xl w-full mx-auto mb-2"
+                      >
+                        <div className="flex items-center justify-between px-4 py-2 rounded-full border border-white/40"
+                          style={{ background: 'rgba(255,255,255,0.5)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${voiceCallActive ? 'bg-green-500 animate-pulse' : 'bg-amber-400 animate-pulse'}`} />
+                            <span className="text-xs font-semibold text-[#1a1a2e]">
                               {voiceCallConnecting ? 'Connecting...' : 'Voice Call Active'}
                             </span>
                             {agentSpeaking && (
                               <span className="flex items-center gap-1 text-xs text-[#af71f1] font-medium">
                                 <span className="flex gap-0.5">
-                                  <span className="w-1 h-3 bg-[#af71f1] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                                  <span className="w-1 h-4 bg-[#af71f1] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                                  <span className="w-1 h-2.5 bg-[#af71f1] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                  <span className="w-1 h-2.5 bg-[#af71f1] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                  <span className="w-1 h-3 bg-[#af71f1] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                  <span className="w-1 h-2 bg-[#af71f1] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                                 </span>
-                                Agent speaking
+                                Speaking
                               </span>
                             )}
                           </div>
                           <button
                             onClick={endVoiceCall}
-                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-full transition-colors shadow-sm"
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold rounded-full transition-colors"
                           >
-                            <PhoneOff className="w-4 h-4" />
-                            End Call
+                            <PhoneOff className="w-3 h-3" />
+                            End
                           </button>
                         </div>
-
-                        {/* Live transcripts */}
-                        {voiceTranscripts.length > 0 && (
-                          <div className="max-h-32 overflow-y-auto rounded-xl px-3 py-2 space-y-1.5 border border-white/40"
-                            style={{ background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
-                          >
-                            {voiceTranscripts.map((t) => (
-                              <p key={t.id} className="text-sm leading-relaxed">
-                                <span className={`font-semibold ${t.speaker === 'agent' ? 'text-[#af71f1]' : 'text-[#1a1a2e]'}`}>
-                                  {t.speaker === 'agent' ? 'Agent' : 'You'}:
-                                </span>{' '}
-                                <span className={`text-[#3a3a4a] ${!t.isFinal ? 'opacity-60' : ''}`}>{t.text}</span>
-                              </p>
-                            ))}
-                            <div ref={voiceTranscriptsEndRef} />
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  ) : (
-                    /* ── Normal Chat Input ── */
-                    <motion.div
-                      key="chat-input"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 20 }}
-                      transition={{ duration: 0.3 }}
-                      className="border-t border-gray-100 px-3 sm:px-6 py-3 sm:py-4 bg-white/95 backdrop-blur-sm"
-                    >
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                       <div className="max-w-7xl w-full mx-auto">
                         <div className="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
                           <div className="flex-1 relative">
@@ -1639,9 +1657,7 @@ const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
                           ))}
                         </div>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                </div>
               </div>
             )}
           </LayoutGroup>

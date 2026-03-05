@@ -144,184 +144,208 @@ const Index = () => {
             {/* Services Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {/* General IT Consulting */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
                 onClick={() => handleCardClick(1)}
-                className="relative w-full h-[348px] cursor-pointer group perspective-1000"
-                style={{ perspective: '1000px' }}
+                className="relative w-full h-[348px] cursor-pointer group"
+                style={{ perspective: '1200px' }}
               >
                 <motion.div
-                  className="relative w-full h-full preserve-3d"
+                  className="relative w-full h-full"
+                  style={{ transformStyle: 'preserve-3d' }}
                   animate={{ rotateY: flippedCards.has(1) ? 180 : 0 }}
                   transition={{ duration: 0.6, ease: "easeInOut" }}
                 >
                   {/* Front of card */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#fbfbfb] to-[#f7efff] rounded-lg p-8 flex flex-col transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-[#d0a4ff]/30 hover:bg-gradient-to-br hover:from-[#f0f0f0] hover:to-[#e8d5ff] hover:-translate-y-1 backface-hidden">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-8 transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3">
-                      <img
-                        className="w-10 h-10"
-                        alt="Icon"
-                        src={deliverIcon}
-                      />
+                  <div
+                    className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl p-8 flex flex-col transition-all duration-300 ease-in-out group-hover:shadow-2xl group-hover:shadow-[#d0a4ff]/15 group-hover:-translate-y-1"
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+                  >
+                    <div
+                      className="w-14 h-14 rounded-xl flex items-center justify-center mb-8 transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3 border border-white/50 shadow-sm"
+                      style={{ background: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+                    >
+                      <img className="w-8 h-8" alt="Icon" src={deliverIcon} />
                     </div>
-                    <div className="font-semibold text-black text-2xl tracking-[-0.40px] leading-[28px] mb-6 transition-all duration-300 ease-in-out group-hover:text-[#0c202b] group-hover:translate-y-[-2px] text-center">
+                    <div className="font-semibold text-[#1a1a2e] text-2xl tracking-[-0.40px] leading-[28px] mb-6 transition-all duration-300 ease-in-out group-hover:translate-y-[-2px] text-center">
                       General IT Consulting
                     </div>
                     <div className="mt-auto text-center">
-                      <div className="text-sm text-gray-500 font-medium">Click to learn more</div>
+                      <div className="text-sm text-[#9b9bac] font-medium">Click to learn more</div>
                     </div>
                   </div>
 
                   {/* Back of card */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#f0f0f0] to-[#e8d5ff] rounded-lg p-8 flex flex-col justify-center backface-hidden" style={{ transform: 'rotateY(180deg)' }}>
-                    <div className="font-semibold text-black text-2xl tracking-[-0.40px] leading-[28px] mb-6 text-center">
+                  <div
+                    className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl p-8 flex flex-col justify-center"
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+                  >
+                    <div className="font-semibold text-[#1a1a2e] text-2xl tracking-[-0.40px] leading-[28px] mb-6 text-center">
                       General IT Consulting
                     </div>
-                    <div className="font-normal text-black text-base tracking-[0] leading-[24px] text-center">
+                    <div className="text-[#3a3a4a] text-base leading-relaxed text-center">
                       We help businesses, entrepreneurs, or employees utilize unique hardware or software solutions to help drive efficiency and productivity.
                     </div>
                     <div className="mt-auto text-center">
-                      <div className="text-sm text-gray-500 font-medium">Click to flip back</div>
+                      <div className="text-sm text-[#9b9bac] font-medium">Click to flip back</div>
                     </div>
                   </div>
                 </motion.div>
               </motion.div>
 
               {/* Agentic AI Solutions */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
                 onClick={() => handleCardClick(2)}
-                className="relative w-full h-[348px] cursor-pointer group perspective-1000"
-                style={{ perspective: '1000px' }}
+                className="relative w-full h-[348px] cursor-pointer group"
+                style={{ perspective: '1200px' }}
               >
                 <motion.div
-                  className="relative w-full h-full preserve-3d"
+                  className="relative w-full h-full"
+                  style={{ transformStyle: 'preserve-3d' }}
                   animate={{ rotateY: flippedCards.has(2) ? 180 : 0 }}
                   transition={{ duration: 0.6, ease: "easeInOut" }}
                 >
                   {/* Front of card */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#fbfbfb] to-[#f7efff] rounded-lg p-8 flex flex-col transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-[#d0a4ff]/30 hover:bg-gradient-to-br hover:from-[#f0f0f0] hover:to-[#e8d5ff] hover:-translate-y-1 backface-hidden">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-8 transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3">
-                      <img
-                        className="w-10 h-10"
-                        alt="Icon"
-                        src={aiIcon}
-                      />
+                  <div
+                    className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl p-8 flex flex-col transition-all duration-300 ease-in-out group-hover:shadow-2xl group-hover:shadow-[#d0a4ff]/15 group-hover:-translate-y-1"
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+                  >
+                    <div
+                      className="w-14 h-14 rounded-xl flex items-center justify-center mb-8 transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3 border border-white/50 shadow-sm"
+                      style={{ background: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+                    >
+                      <img className="w-8 h-8" alt="Icon" src={aiIcon} />
                     </div>
-                    <div className="font-semibold text-black text-2xl tracking-[-0.40px] leading-[28px] mb-6 transition-all duration-300 ease-in-out group-hover:text-[#0c202b] group-hover:translate-y-[-2px] text-center">
+                    <div className="font-semibold text-[#1a1a2e] text-2xl tracking-[-0.40px] leading-[28px] mb-6 transition-all duration-300 ease-in-out group-hover:translate-y-[-2px] text-center">
                       Agentic AI Solutions
                     </div>
                     <div className="mt-auto text-center">
-                      <div className="text-sm text-gray-500 font-medium">Click to learn more</div>
+                      <div className="text-sm text-[#9b9bac] font-medium">Click to learn more</div>
                     </div>
                   </div>
 
                   {/* Back of card */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#f0f0f0] to-[#e8d5ff] rounded-lg p-8 flex flex-col justify-center backface-hidden" style={{ transform: 'rotateY(180deg)' }}>
-                    <div className="font-semibold text-black text-2xl tracking-[-0.40px] leading-[28px] mb-6 text-center">
+                  <div
+                    className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl p-8 flex flex-col justify-center"
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+                  >
+                    <div className="font-semibold text-[#1a1a2e] text-2xl tracking-[-0.40px] leading-[28px] mb-6 text-center">
                       Agentic AI Solutions
                     </div>
-                    <div className="font-normal text-black text-base tracking-[0] leading-[24px] text-center">
+                    <div className="text-[#3a3a4a] text-base leading-relaxed text-center">
                       Our premier solution that incorporates a unique and custom AI experience that can execute tasks so that you don't have to.
                     </div>
                     <div className="mt-auto text-center">
-                      <div className="text-sm text-gray-500 font-medium">Click to flip back</div>
+                      <div className="text-sm text-[#9b9bac] font-medium">Click to flip back</div>
                     </div>
                   </div>
                 </motion.div>
               </motion.div>
 
               {/* Automation Solutions */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
                 onClick={() => handleCardClick(3)}
-                className="relative w-full h-[348px] cursor-pointer group perspective-1000"
-                style={{ perspective: '1000px' }}
+                className="relative w-full h-[348px] cursor-pointer group"
+                style={{ perspective: '1200px' }}
               >
                 <motion.div
-                  className="relative w-full h-full preserve-3d"
+                  className="relative w-full h-full"
+                  style={{ transformStyle: 'preserve-3d' }}
                   animate={{ rotateY: flippedCards.has(3) ? 180 : 0 }}
                   transition={{ duration: 0.6, ease: "easeInOut" }}
                 >
                   {/* Front of card */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#fbfbfb] to-[#f7efff] rounded-lg p-8 flex flex-col transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-[#d0a4ff]/30 hover:bg-gradient-to-br hover:from-[#f0f0f0] hover:to-[#e8d5ff] hover:-translate-y-1 backface-hidden">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-8 transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3">
-                      <img
-                        className="w-10 h-10"
-                        alt="Icon"
-                        src={automationIcon}
-                      />
+                  <div
+                    className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl p-8 flex flex-col transition-all duration-300 ease-in-out group-hover:shadow-2xl group-hover:shadow-[#d0a4ff]/15 group-hover:-translate-y-1"
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+                  >
+                    <div
+                      className="w-14 h-14 rounded-xl flex items-center justify-center mb-8 transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3 border border-white/50 shadow-sm"
+                      style={{ background: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+                    >
+                      <img className="w-8 h-8" alt="Icon" src={automationIcon} />
                     </div>
-                    <div className="font-semibold text-black text-2xl tracking-[-0.40px] leading-[28px] mb-6 transition-all duration-300 ease-in-out group-hover:text-[#0c202b] group-hover:translate-y-[-2px] text-center">
+                    <div className="font-semibold text-[#1a1a2e] text-2xl tracking-[-0.40px] leading-[28px] mb-6 transition-all duration-300 ease-in-out group-hover:translate-y-[-2px] text-center">
                       Automation Solutions
                     </div>
                     <div className="mt-auto text-center">
-                      <div className="text-sm text-gray-500 font-medium">Click to learn more</div>
+                      <div className="text-sm text-[#9b9bac] font-medium">Click to learn more</div>
                     </div>
                   </div>
 
                   {/* Back of card */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#f0f0f0] to-[#e8d5ff] rounded-lg p-8 flex flex-col justify-center backface-hidden" style={{ transform: 'rotateY(180deg)' }}>
-                    <div className="font-semibold text-black text-2xl tracking-[-0.40px] leading-[28px] mb-6 text-center">
+                  <div
+                    className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl p-8 flex flex-col justify-center"
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+                  >
+                    <div className="font-semibold text-[#1a1a2e] text-2xl tracking-[-0.40px] leading-[28px] mb-6 text-center">
                       Automation Solutions
                     </div>
-                    <div className="font-normal text-black text-base tracking-[0] leading-[24px] text-center">
+                    <div className="text-[#3a3a4a] text-base leading-relaxed text-center">
                       Our most cost effective solution. If you have a repetitious tasks, we can incorporate robotic processes to execute them for you.
                     </div>
                     <div className="mt-auto text-center">
-                      <div className="text-sm text-gray-500 font-medium">Click to flip back</div>
+                      <div className="text-sm text-[#9b9bac] font-medium">Click to flip back</div>
                     </div>
                   </div>
                 </motion.div>
               </motion.div>
 
               {/* Data Transformation Solutions */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
                 onClick={() => handleCardClick(4)}
-                className="relative w-full h-[348px] cursor-pointer group perspective-1000"
-                style={{ perspective: '1000px' }}
+                className="relative w-full h-[348px] cursor-pointer group"
+                style={{ perspective: '1200px' }}
               >
                 <motion.div
-                  className="relative w-full h-full preserve-3d"
+                  className="relative w-full h-full"
+                  style={{ transformStyle: 'preserve-3d' }}
                   animate={{ rotateY: flippedCards.has(4) ? 180 : 0 }}
                   transition={{ duration: 0.6, ease: "easeInOut" }}
                 >
                   {/* Front of card */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#fbfbfb] to-[#f7efff] rounded-lg p-8 flex flex-col transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-[#d0a4ff]/30 hover:bg-gradient-to-br hover:from-[#f0f0f0] hover:to-[#e8d5ff] hover:-translate-y-1 backface-hidden">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-8 transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3">
-                      <img
-                        className="w-10 h-10"
-                        alt="Icon"
-                        src={dataTransformationIcon}
-                      />
+                  <div
+                    className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl p-8 flex flex-col transition-all duration-300 ease-in-out group-hover:shadow-2xl group-hover:shadow-[#d0a4ff]/15 group-hover:-translate-y-1"
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}
+                  >
+                    <div
+                      className="w-14 h-14 rounded-xl flex items-center justify-center mb-8 transition-all duration-300 ease-in-out group-hover:scale-110 group-hover:rotate-3 border border-white/50 shadow-sm"
+                      style={{ background: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+                    >
+                      <img className="w-8 h-8" alt="Icon" src={dataTransformationIcon} />
                     </div>
-                    <div className="font-semibold text-black text-2xl tracking-[-0.40px] leading-[28px] mb-6 transition-all duration-300 ease-in-out group-hover:text-[#0c202b] group-hover:translate-y-[-2px] text-center">
+                    <div className="font-semibold text-[#1a1a2e] text-2xl tracking-[-0.40px] leading-[28px] mb-6 transition-all duration-300 ease-in-out group-hover:translate-y-[-2px] text-center">
                       Data Transformation Solutions
                     </div>
                     <div className="mt-auto text-center">
-                      <div className="text-sm text-gray-500 font-medium">Click to learn more</div>
+                      <div className="text-sm text-[#9b9bac] font-medium">Click to learn more</div>
                     </div>
                   </div>
 
                   {/* Back of card */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#f0f0f0] to-[#e8d5ff] rounded-lg p-8 flex flex-col justify-center backface-hidden" style={{ transform: 'rotateY(180deg)' }}>
-                    <div className="font-semibold text-black text-2xl tracking-[-0.40px] leading-[28px] mb-6 text-center">
+                  <div
+                    className="absolute inset-0 w-full h-full rounded-2xl border border-white/40 shadow-xl p-8 flex flex-col justify-center"
+                    style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)', background: 'rgba(255, 255, 255, 0.5)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)' }}
+                  >
+                    <div className="font-semibold text-[#1a1a2e] text-2xl tracking-[-0.40px] leading-[28px] mb-6 text-center">
                       Data Transformation Solutions
                     </div>
-                    <div className="font-normal text-black text-base tracking-[0] leading-[24px] text-center">
+                    <div className="text-[#3a3a4a] text-base leading-relaxed text-center">
                       The most productive way to consolidate data and bring analytics that matters.
                     </div>
                     <div className="mt-auto text-center">
-                      <div className="text-sm text-gray-500 font-medium">Click to flip back</div>
+                      <div className="text-sm text-[#9b9bac] font-medium">Click to flip back</div>
                     </div>
                   </div>
                 </motion.div>
