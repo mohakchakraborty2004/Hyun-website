@@ -12,7 +12,7 @@ import { XpectrumVoice, type TranscriptionSegment } from "@xpectrum/sdk";
 import haLogo from "@/assets/HA.png";
 
 // ─── Dify API Config ────────────────────────────────────────────────────────
-const DIFY_API_URL = "https://xpectrum-main-app-prod-cocfr.ondigitalocean.app/api/v1/chat-messages";
+const DIFY_API_URL = "https://cloud.xpectrum.co/api/v1/chat-messages";
 const DIFY_API_KEY = "app-inV7BpUmj47RIiD0nnFvQNyH";
 
 // ─── Card Widget Types ──────────────────────────────────────────────────────
