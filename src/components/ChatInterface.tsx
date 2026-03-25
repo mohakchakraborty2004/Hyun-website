@@ -8,12 +8,8 @@ import {
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { XpectrumVoice, type TranscriptionSegment } from "@xpectrum/sdk";
+import { XpectrumChat, XpectrumVoice, type TranscriptionSegment, type ThoughtEvent } from "@xpectrum/sdk";
 import haLogo from "@/assets/HA.png";
-
-// ─── Dify API Config ────────────────────────────────────────────────────────
-const DIFY_API_URL = "https://cloud.xpectrum.co/api/v1/chat-messages";
-const DIFY_API_KEY = "app-inV7BpUmj47RIiD0nnFvQNyH";
 
 // ─── Card Widget Types ──────────────────────────────────────────────────────
 type CardWidget = {
@@ -962,6 +958,8 @@ const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const userScrolledUpRef = useRef(false);
+  const chatClientRef = useRef<XpectrumChat | null>(null);
+  const conversationIdRef = useRef(conversationId);
 
   // Expanded Scroll Tolerance (150px)
   const handleChatScroll = useCallback(() => {
@@ -977,6 +975,25 @@ const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     ctx?.fillText('fp', 10, 10);
     return btoa(navigator.userAgent + screen.width + Intl.DateTimeFormat().resolvedOptions().timeZone + canvas.toDataURL().slice(-20)).slice(0, 32);
   };
+
+  // ── XpectrumChat client initialization ──────────────────────────
+  useEffect(() => {
+    const baseUrl = import.meta.env.VITE_CHAT_BASE_URL;
+    const apiKey = import.meta.env.VITE_CHAT_API_KEY;
+    if (baseUrl && apiKey) {
+      chatClientRef.current = new XpectrumChat({
+        baseUrl,
+        apiKey,
+        user: getUserIdentifier(),
+      });
+    }
+    return () => { chatClientRef.current?.destroy(); };
+  }, []);
+
+  // Keep conversationIdRef in sync with state
+  useEffect(() => {
+    conversationIdRef.current = conversationId;
+  }, [conversationId]);
 
   const suggestedQuestions = [
     "What services do you offer?",
@@ -1015,17 +1032,18 @@ const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     const recognition = new SpeechRecognition();
     recognition.lang = 'en-US';
     recognition.interimResults = true;
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.maxAlternatives = 1;
     recognitionRef.current = recognition;
 
-    let finalTranscript = '';
+    pendingVoiceTextRef.current = '';
 
     recognition.onstart = () => setIsListening(true);
 
     recognition.onresult = (event: any) => {
+      let finalTranscript = '';
       let interim = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      for (let i = 0; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
           finalTranscript += transcript;
@@ -1033,20 +1051,34 @@ const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           interim += transcript;
         }
       }
+      if (finalTranscript) {
+        pendingVoiceTextRef.current = finalTranscript.trim();
+      }
       setMessage(finalTranscript + interim);
+
+      // Auto-stop after 2s of silence
+      if (voiceTimeoutRef.current) clearTimeout(voiceTimeoutRef.current);
+      voiceTimeoutRef.current = setTimeout(() => {
+        if (recognitionRef.current) recognitionRef.current.stop();
+      }, 2000);
     };
 
     recognition.onend = () => {
       setIsListening(false);
       recognitionRef.current = null;
-      if (finalTranscript.trim()) {
-        pendingVoiceTextRef.current = finalTranscript.trim();
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
+        voiceTimeoutRef.current = null;
       }
     };
 
     recognition.onerror = (event: any) => {
       setIsListening(false);
       recognitionRef.current = null;
+      if (voiceTimeoutRef.current) {
+        clearTimeout(voiceTimeoutRef.current);
+        voiceTimeoutRef.current = null;
+      }
       if (event.error !== 'no-speech' && event.error !== 'aborted') {
         setError(`Voice error: ${event.error}`);
       }
@@ -1177,6 +1209,11 @@ const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     const textToSend = typeof eOrMsg === 'string' ? eOrMsg : message;
     if (!textToSend.trim() || textToSend.length > 2000) return;
 
+    if (!chatClientRef.current) {
+      setError('Chat is not configured.');
+      return;
+    }
+
     setChat(prev => [...prev, { role: 'user', text: textToSend }]);
     setMessage(""); setIsLoading(true); setStreamedText(""); setError(""); setShowWelcome(false);
     setPendingCardWidget(null);
@@ -1187,137 +1224,108 @@ const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     let messageAdded = false;
     let extractedCard: CardWidget | null = null;
 
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
+    const doSend = (convId: string) => {
+      return chatClientRef.current!.sendMessage(textToSend, {
+        conversationId: convId || undefined,
 
-      let response = await fetch(DIFY_API_URL, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${DIFY_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          inputs: {},
-          query: textToSend,
-          response_mode: 'streaming',
-          conversation_id: conversationId || "",
-          user: getUserIdentifier(),
-        }),
-        signal: controller.signal,
+        onMessage: (accumulatedText: string, _messageId: string, newConversationId: string) => {
+          fullText = accumulatedText;
+          if (newConversationId) setConversationId(newConversationId);
+          setStreamedText(accumulatedText);
+
+          // Try to extract card from accumulated text as soon as JSON is parseable
+          if (!extractedCard && accumulatedText.includes('}]')) {
+            const card = tryParseCompanyProfile(accumulatedText);
+            if (card) {
+              console.log('[ChatDebug] Card extracted from streamed text');
+              extractedCard = card;
+              setPendingCardWidget(card);
+            }
+          }
+        },
+
+        onThought: (thought: ThoughtEvent) => {
+          const mapped: AgentThought = {
+            id: thought.id, thought: thought.thought, observation: thought.observation || '',
+            tool: thought.tool || '', tool_input: thought.tool_input || '',
+          };
+          console.log('[ChatDebug] agent_thought:', { tool: mapped.tool, hasObservation: !!mapped.observation, observationPreview: mapped.observation?.substring(0, 150) });
+          const existingIdx = agentThoughts.findIndex(t => t.id === mapped.id);
+          if (existingIdx >= 0) {
+            agentThoughts[existingIdx] = {
+              ...agentThoughts[existingIdx], ...mapped,
+              observation: mapped.observation || agentThoughts[existingIdx].observation,
+              thought: mapped.thought || agentThoughts[existingIdx].thought,
+            };
+          } else {
+            agentThoughts.push(mapped);
+          }
+          const card = extractCardFromThoughts(agentThoughts);
+          if (card) {
+            console.log('[ChatDebug] Card extracted from thoughts:', card.type, card.payload);
+            extractedCard = card;
+            setPendingCardWidget(card);
+          }
+        },
+
+        onMessageEnd: () => {
+          console.log('[ChatDebug] message_end. fullText preview:', fullText.substring(0, 200), 'extractedCard:', extractedCard?.type);
+          if (!extractedCard && fullText) extractedCard = extractCardFromContent(fullText);
+
+          if (!messageAdded) {
+            setChat(prev => [...prev, {
+              role: 'bot',
+              text: extractedCard ? '' : stripJson(fullText),
+              cardWidget: extractedCard,
+            }]);
+            messageAdded = true;
+          }
+          setStreamedText('');
+          setPendingCardWidget(null);
+        },
+
+        onError: (err) => {
+          setError(err.message || 'An error occurred');
+        },
+
+        onCompleted: () => {
+          // Fallback: if stream ended without message_end event
+          if (fullText.trim() && !messageAdded) {
+            if (!extractedCard && fullText) extractedCard = extractCardFromContent(fullText);
+            setChat(prev => [...prev, {
+              role: 'bot',
+              text: extractedCard ? '' : stripJson(fullText),
+              cardWidget: extractedCard,
+            }]);
+            setStreamedText('');
+            setPendingCardWidget(null);
+          }
+          setIsLoading(false);
+        },
       });
+    };
 
-      clearTimeout(timeoutId);
-
-      if (response.status === 404 && conversationId) {
+    try {
+      await doSend(conversationIdRef.current);
+    } catch (err: any) {
+      // Retry with fresh conversation if 404 (stale conversation)
+      if (err?.status === 404 && conversationIdRef.current) {
         setConversationId("");
         if (typeof window !== 'undefined') sessionStorage.removeItem('hyun-conversation-id');
-        const retryResp = await fetch(DIFY_API_URL, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${DIFY_API_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ inputs: {}, query: textToSend, response_mode: 'streaming', conversation_id: "", user: getUserIdentifier() }),
-        });
-        if (!retryResp.ok) throw new Error(`API error ${retryResp.status}`);
-        response = retryResp;
-      } else if (!response.ok) {
-        throw new Error(`API error ${response.status}`);
-      }
-      if (!response.body) throw new Error('No response body');
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (!line.trim() || !line.startsWith('data: ')) continue;
-          try {
-            const data = JSON.parse(line.slice(6));
-
-            if (data.conversation_id) setConversationId(data.conversation_id);
-
-            if ((data.event === 'agent_message' || data.event === 'message') && data.answer) {
-              fullText += data.answer;
-              setStreamedText(fullText);
-
-              // Try to extract card from accumulated text as soon as JSON is parseable
-              if (!extractedCard && fullText.includes('}]')) {
-                const card = tryParseCompanyProfile(fullText);
-                if (card) {
-                  console.log('[ChatDebug] Card extracted from streamed text');
-                  extractedCard = card;
-                  setPendingCardWidget(card);
-                }
-              }
-            }
-
-            if (data.event === 'agent_thought') {
-              const thought: AgentThought = {
-                id: data.id || '', thought: data.thought || '', observation: data.observation || '',
-                tool: data.tool || '', tool_input: data.tool_input || '',
-              };
-              console.log('[ChatDebug] agent_thought:', { tool: thought.tool, hasObservation: !!thought.observation, observationPreview: thought.observation?.substring(0, 150) });
-              const existingIdx = agentThoughts.findIndex(t => t.id === thought.id);
-              if (existingIdx >= 0) {
-                agentThoughts[existingIdx] = {
-                  ...agentThoughts[existingIdx], ...thought,
-                  observation: thought.observation || agentThoughts[existingIdx].observation,
-                  thought: thought.thought || agentThoughts[existingIdx].thought,
-                };
-              } else {
-                agentThoughts.push(thought);
-              }
-              const card = extractCardFromThoughts(agentThoughts);
-              if (card) {
-                console.log('[ChatDebug] Card extracted from thoughts:', card.type, card.payload);
-                extractedCard = card;
-                setPendingCardWidget(card);
-              }
-            }
-
-            if (data.event === 'message_end') {
-              console.log('[ChatDebug] message_end. fullText preview:', fullText.substring(0, 200), 'extractedCard:', extractedCard?.type);
-              if (!extractedCard && fullText) extractedCard = extractCardFromContent(fullText);
-
-              if (!messageAdded) {
-                setChat(prev => [...prev, {
-                  role: 'bot',
-                  // Ensure JSON is completely stripped when saving the final message text
-                  text: extractedCard ? '' : stripJson(fullText),
-                  cardWidget: extractedCard,
-                }]);
-                messageAdded = true;
-              }
-              setStreamedText('');
-              setPendingCardWidget(null);
-            }
-
-            if (data.event === 'error') setError(data.message || 'An error occurred');
-          } catch {}
+        try {
+          await doSend("");
+        } catch (retryErr: any) {
+          console.error('Chat error:', retryErr);
+          setError(retryErr.message || 'Failed to get response.');
+          setIsLoading(false);
         }
-      }
-
-      if (fullText.trim() && !messageAdded) {
-        if (!extractedCard && fullText) extractedCard = extractCardFromContent(fullText);
-        setChat(prev => [...prev, {
-          role: 'bot',
-          text: extractedCard ? '' : stripJson(fullText),
-          cardWidget: extractedCard,
-        }]);
-        setStreamedText('');
-        setPendingCardWidget(null);
-      }
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
+      } else if (err?.name !== 'AbortError') {
         console.error('Chat error:', err);
         setError(err.message || 'Failed to get response.');
+        setIsLoading(false);
       }
       setStreamedText("");
     }
-    setIsLoading(false);
   };
 
   const sendMessage = useCallback((msg: string) => { handleSend(msg); }, [conversationId]);
